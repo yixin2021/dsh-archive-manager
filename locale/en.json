@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Archived Chat Manager",
+    "description": "Batch-manages archived chats from a Settings page: search, multi-select restore, and delete."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "dsh-archive-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Batch management of archived Sessions: list, restore, and delete from a Settings page.",
+  "license": "MIT",
+  "author": "ligudian",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yixin2021/dsh-archive-manager.git"
+  },
+  "homepage": "https://github.com/yixin2021/dsh-archive-manager#readme",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "archive"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check index.js && node --check client.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  }
+}

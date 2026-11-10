@@ -1,0 +1,10 @@
+- insert:
+    - id: archive-manager
+      name: 'dsh-archive-manager'
+      config:
+        # Session log root, the trash folder a deleted log moves into, and the
+        # projection cache pruned with it. Empty means "derive from $DSH_HOME",
+        # which is the layout the composed persistence backend already uses.
+        sessionsRoot: ''
+        trashRoot: ''
+        projectionCacheRoot: ''
