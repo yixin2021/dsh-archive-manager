@@ -24,30 +24,35 @@ persistence backend's on-disk layout for the log directories.
 
 ## Install
 
+Install straight from the public repository as a profile bundle:
+
+```text
+plugin_manager install_bundle target=git+https://github.com/yixin2021/dsh-archive-manager.git
+```
+
+Or, from a local checkout of this repository:
+
 ```bash
-# from this directory
 dsh plugin install .
 ```
 
-Or install the directory as a profile bundle through the Harness plugin
-manager, which is what the delivered install used:
-
-```text
-plugin_manager install_bundle target=/absolute/path/to/dsh-archive-manager
-```
+The package declares `dsh.bundle.patch` (`./cordis.patch.yml`) and a web client
+half, so the plugin manager wires both halves without extra configuration.
 
 ## Configuration
 
-The bundle patch inserts one row; both settings are optional and default to the
-current DSH home:
+The bundle patch inserts one row. Every setting is optional — an empty value is
+derived from the current DSH home, which is the layout the composed persistence
+backend and the projection cache already use:
 
 ```yaml
 - insert:
     - id: archive-manager
       name: 'dsh-archive-manager'
       config:
-        sessionsRoot: ''   # default $DSH_HOME/sessions
-        trashRoot: ''      # default $DSH_HOME/archived-sessions-trash
+        sessionsRoot: ''         # default $DSH_HOME/sessions
+        trashRoot: ''            # default $DSH_HOME/archived-sessions-trash
+        projectionCacheRoot: ''  # default $DSH_HOME/storages/session_projcache/sessions
 ```
 
 ## Host API
