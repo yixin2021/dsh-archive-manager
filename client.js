@@ -3,9 +3,12 @@
  *
  * One Settings page ("Archived chats") for batch management: the page is
  * reachable from the sidebar account menu through Settings, which is the only
- * additive seat this shell offers for feature-owned management UI. Every
- * operation is a Host call: this half holds no archive state of its own, and
- * the Host route is the same authenticated carrier the rest of the app uses.
+ * additive seat this shell offers for feature-owned management UI. The nav row
+ * carries its own archive glyph (`settings.section.icon`, matched by section
+ * id) instead of the shell's Settings-gear fallback, so the feature is not
+ * mistaken for a second Settings entry. Every operation is a Host call: this
+ * half holds no archive state of its own, and the Host route is the same
+ * authenticated carrier the rest of the app uses.
  */
 window.__ModuleLoader__.load({
   id: 'dsh-archive-manager',
@@ -16,6 +19,14 @@ window.__ModuleLoader__.load({
     const NS = 'dsh-archive-manager'
     const ROUTE = 'api/archive-manager'
     const SLOT = 'settings.section'
+    /**
+     * The settings nav row and its glyph share this id: the shell matches an
+     * icon registration to the section row by id, and a row without a matching
+     * icon falls back to the Settings gear — the very duplication this id
+     * exists to avoid.
+     */
+    const SECTION_ID = 'archive-manager'
+    const ICON_SLOT = 'settings.section.icon'
 
     /** English is the fallback dictionary; Simplified Chinese mirrors it. */
     const en = {
@@ -55,7 +66,7 @@ window.__ModuleLoader__.load({
     }
 
     const zh = {
-      badge: '归档管理',
+      badge: '归档会话',
       title: '归档会话管理',
       subtitle: '共 {count} 个已归档会话',
       subtitleEmpty: '暂无归档会话',
@@ -227,7 +238,14 @@ window.__ModuleLoader__.load({
       return parts.length === 0 ? value : parts[parts.length - 1]
     }
 
-    function IconArchive({ size = 16 }) {
+    /**
+     * The feature mark: a lidded archive box with a pull slot, echoing the
+     * bundle icon. Used at two sizes — 15px beside the page title and 16px in
+     * the settings navigation, where it replaces the shell's fallback gear.
+     * `active` deepens the lid and slot so the selected nav row still reads at
+     * a glance; the shell owns the row background and text color.
+     */
+    function ArchiveGlyph({ size = 16, active = false }) {
       return h(
         'svg',
         {
@@ -237,14 +255,30 @@ window.__ModuleLoader__.load({
           height: size,
           fill: 'none',
           stroke: 'currentColor',
-          strokeWidth: 1.3,
+          strokeWidth: 1.25,
           strokeLinecap: 'round',
           strokeLinejoin: 'round',
           'aria-hidden': true,
+          focusable: 'false',
         },
-        h('rect', { x: 1.9, y: 2.6, width: 12.2, height: 3.1, rx: 1 }),
-        h('path', { d: 'M3.1 5.7v7.1a1 1 0 0 0 1 1h7.8a1 1 0 0 0 1-1V5.7' }),
-        h('path', { d: 'M6.4 8.6h3.2' }),
+        h('rect', {
+          x: 1.8,
+          y: 2.5,
+          width: 12.4,
+          height: 3.2,
+          rx: 1.1,
+          fill: active ? 'currentColor' : 'none',
+          fillOpacity: active ? 0.16 : 0,
+        }),
+        h('path', {
+          d: 'M2.95 5.7v6.4a1.6 1.6 0 0 0 1.6 1.6h6.9a1.6 1.6 0 0 0 1.6-1.6V5.7',
+          fill: active ? 'currentColor' : 'none',
+          fillOpacity: active ? 0.08 : 0,
+        }),
+        h('path', {
+          d: 'M6.3 8.8h3.4',
+          strokeWidth: active ? 1.7 : 1.25,
+        }),
       )
     }
 
@@ -405,7 +439,7 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'amgr-headText' },
-            h('h2', { className: 'amgr-headTitle' }, h(IconArchive, { size: 15 }), t('title')),
+            h('h2', { className: 'amgr-headTitle' }, h(ArchiveGlyph, { size: 15 }), t('title')),
             h('span', { className: 'amgr-headSub' }, subtitle),
           ),
         ),
@@ -598,14 +632,14 @@ window.__ModuleLoader__.load({
 
     function reasonText(t, reason) {
       switch (reason) {
-    case 'not-archived':
-      return t('reasonNotArchived')
-    case 'live':
-      return t('reasonLive')
-    case 'missing-log':
-      return t('reasonMissingLog')
-    default:
-      return t('reasonFailed')
+        case 'not-archived':
+          return t('reasonNotArchived')
+        case 'live':
+          return t('reasonLive')
+        case 'missing-log':
+          return t('reasonMissingLog')
+        default:
+          return t('reasonFailed')
       }
     }
 
@@ -614,47 +648,57 @@ window.__ModuleLoader__.load({
       let t = (key) => (Object.prototype.hasOwnProperty.call(zh, key) ? zh[key] : key)
 
       if (locale !== undefined) {
-    try {
-      ctx.effect(() => locale.register(NS, { en, zh }), 'dsh-archive-manager: locale dictionaries')
-    } catch {
-      /* a previous run's dictionaries stay usable through `bind` */
-    }
-    try {
-      t = locale.bind(NS)
-    } catch {
-      /* keep the embedded fallback */
-    }
+        try {
+          ctx.effect(() => locale.register(NS, { en, zh }), 'dsh-archive-manager: locale dictionaries')
+        } catch {
+          /* a previous run's dictionaries stay usable through `bind` */
+        }
+        try {
+          t = locale.bind(NS)
+        } catch {
+          /* keep the embedded fallback */
+        }
       }
 
       service = {
-    locale,
-    t: (key, params) => interpolate(t(key), params),
+        locale,
+        t: (key, params) => interpolate(t(key), params),
       }
 
       const styles = {
-    insert(css) {
-      if (typeof document === 'undefined') return () => {}
-      const tag = document.createElement('style')
-      tag.dataset.plugin = 'dsh-archive-manager'
-      tag.dataset.pluginCss = 'dsh-archive-manager/manager.css'
-      tag.textContent = css
-      document.head.appendChild(tag)
-      return () => tag.remove()
-    },
+        insert(css) {
+          if (typeof document === 'undefined') return () => {}
+          const tag = document.createElement('style')
+          tag.dataset.plugin = 'dsh-archive-manager'
+          tag.dataset.pluginCss = 'dsh-archive-manager/manager.css'
+          tag.textContent = css
+          document.head.appendChild(tag)
+          return () => tag.remove()
+        },
       }
       ctx.effect(() => styles.insert(CSS), 'dsh-archive-manager: styles')
 
+      /*
+       * Match the shell's nav row to a glyph of our own. The id is the
+       * contract: the shell renders this icon only for the section whose id is
+       * identical, and without a match it draws the Settings gear — leaving
+       * the feature looking like a second Settings button.
+       */
+      ctx.slots.inject(ICON_SLOT, () =>
+        ctx.slots.register({ name: ICON_SLOT, id: SECTION_ID, order: 30 }, ArchiveGlyph),
+      )
+
       ctx.slots.inject(SLOT, () =>
-    ctx.slots.register(
-      {
-        name: SLOT,
-        id: 'archive-manager',
-        order: 30,
-        locale: NS,
-        label: () => t('badge'),
-      },
-      Section,
-    ),
+        ctx.slots.register(
+          {
+            name: SLOT,
+            id: SECTION_ID,
+            order: 30,
+            locale: NS,
+            label: () => t('badge'),
+          },
+          Section,
+        ),
       )
     }
 

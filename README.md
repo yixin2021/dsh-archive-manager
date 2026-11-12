@@ -4,8 +4,10 @@ Batch management for **archived chats** in the DeepSeek Harness Web UI.
 
 The plugin adds an *Archived chats* page inside **Settings** — open the account
 menu at the sidebar foot and choose Settings, then pick **归档会话 / Archived
-chats** in the settings navigation. The page lists every archived Session with
-its title, folder, last update, and log size, and offers:
+chats** in the settings navigation. The nav row carries its own archive glyph
+(`settings.section.icon`) instead of the shell's fallback Settings gear, so the
+feature does not read as a second Settings button. The page lists every archived
+Session with its title, folder, last update, and log size, and offers:
 
 - **Search** by title or folder.
 - **Multi-select** (per row, filtered select-all) with **Restore** and **Delete**.
@@ -77,6 +79,12 @@ Failure reasons per Session: `not-archived`, `live`, `missing-log`, `failed`.
   therefore the nearest additive destination reachable from that menu: click the
   avatar → **Settings** → **归档会话 / Archived chats**. The page is registered in
   `settings.section` at `order: 30`, after General, Models, and Plugins.
+- **The nav entry has its own glyph.** A `settings.section` registration whose id
+  has no matching `settings.section.icon` entry gets the shell's Settings gear as
+  its fallback, which makes the Archived chats row indistinguishable from
+  Settings. This plugin registers a lidded-archive glyph under the same id
+  (`archive-manager`), so the row reads as its own feature: outline at rest, a
+  filled lid and heavier pull slot while selected.
 - **Deleting removes the row immediately.** A Session removed out of band never
   emits `session/disposed`, so the Host half also emits `api-session/removed`
   for each Session it deletes; connected clients drop the row (and the sidebar
